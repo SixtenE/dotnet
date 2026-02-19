@@ -40,10 +40,4 @@ public class HelloWorldControllerTests : IClassFixture<WebApplicationFactory<Pro
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-
-    [Fact]
-    public void IntentionalFailure_AlwaysFails()
-    {
-        Assert.True(false, "This test fails on purpose");
-    }
 }
