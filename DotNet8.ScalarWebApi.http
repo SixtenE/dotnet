@@ -1,0 +1,11 @@
+@ScalarExample_HostAddress = http://localhost:5290
+
+# GET request to HelloWorld endpoint
+GET {{ScalarExample_HostAddress}}/HelloWorld/
+Accept: application/json
+
+###
+
+# GET request to HelloWorld/echo with a query parameter
+GET {{ScalarExample_HostAddress}}/HelloWorld/echo?message=HelloWorld
+Accept: application/json
