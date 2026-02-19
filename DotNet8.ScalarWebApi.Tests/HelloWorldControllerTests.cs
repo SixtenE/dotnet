@@ -20,7 +20,7 @@ public class HelloWorldControllerTests : IClassFixture<WebApplicationFactory<Pro
 
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Hello World", content);
+        Assert.Contains("Sean", content);
     }
 
     [Fact]
