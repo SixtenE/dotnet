@@ -25,3 +25,6 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build -c Release
+
+      - name: Build Docker image
+        run: docker build -t dotnet8-scalar-webapi:${{ github.sha }} .
