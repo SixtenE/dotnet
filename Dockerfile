@@ -8,6 +8,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["DotNet8.ScalarWebApi.csproj", "./"]
+# Make this dockerfile fail on purpose
+run exit 1
 RUN dotnet restore "DotNet8.ScalarWebApi.csproj"
 COPY . .
 WORKDIR "/src/"
