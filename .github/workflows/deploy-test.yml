@@ -13,29 +13,29 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t myapi:test .
+          docker build -t dotnet:test .
 
       - name: Stop/remove old container (if any)
         run: |
-          docker rm -f myapi-test || true
+          docker rm -f dotnet-test || true
 
       - name: Run new container
         run: |
           docker run -d \
-            --name myapi-test \
-            -p 8080:8080 \
+            --name dotnet-test \
+            -p 5290:5290 \
             --restart unless-stopped \
-            myapi:test
+            dotnet:test
 
       - name: Smoke test
         run: |
           for i in {1..30}; do
-            if curl -fsS http://localhost:8080/health >/dev/null; then
+            if curl -fsS http://localhost:5290/health >/dev/null; then
               echo "OK"
               exit 0
             fi
             sleep 2
           done
           echo "Health check failed"
-          docker logs myapi-test || true
+          docker logs dotnet-test || true
           exit 1
