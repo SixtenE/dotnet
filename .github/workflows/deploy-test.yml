@@ -11,6 +11,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Run tests
+        run: |
+          dotnet test DotNet8.ScalarWebApi.Tests/DotNet8.ScalarWebApi.Tests.csproj \
+            --configuration Release \
+            --logger "console;verbosity=normal"
+
       - name: Build Docker image
         run: |
           docker build -t dotnet:test .

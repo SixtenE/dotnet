@@ -4,12 +4,26 @@ substitutions:
   _SERVICE_NAME: myapi-prod
 
 steps:
+  - name: mcr.microsoft.com/dotnet/sdk:10.0
+    entrypoint: dotnet
+    args:
+      [
+        "test",
+        "DotNet8.ScalarWebApi.Tests/DotNet8.ScalarWebApi.Tests.csproj",
+        "--configuration",
+        "Release",
+        "--logger",
+        "console;verbosity=normal",
+      ]
+
   - name: gcr.io/cloud-builders/docker
     args:
       [
         "build",
         "-t",
         "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA",
+        "-t",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:latest",
         ".",
       ]
 
@@ -17,7 +31,8 @@ steps:
     args:
       [
         "push",
-        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA",
+        "--all-tags",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi",
       ]
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -38,3 +53,4 @@ steps:
 
 images:
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:latest"
