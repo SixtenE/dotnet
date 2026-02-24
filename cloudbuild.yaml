@@ -1,0 +1,40 @@
+substitutions:
+  _REGION: europe-north1
+  _AR_REPO: my-docker-repo
+  _SERVICE_NAME: myapi-prod
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      [
+        "build",
+        "-t",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA",
+        ".",
+      ]
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      [
+        "push",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA",
+      ]
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "${_SERVICE_NAME}",
+        "--image",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA",
+        "--region",
+        "${_REGION}",
+        "--platform",
+        "managed",
+        "--quiet",
+      ]
+
+images:
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/myapi:$COMMIT_SHA"

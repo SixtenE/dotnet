@@ -1,0 +1,41 @@
+name: Deploy to test (Macbook Docker)
+
+on:
+  push:
+    branches: [test]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, mac-test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t myapi:test .
+
+      - name: Stop/remove old container (if any)
+        run: |
+          docker rm -f myapi-test || true
+
+      - name: Run new container
+        run: |
+          docker run -d \
+            --name myapi-test \
+            -p 8080:8080 \
+            --restart unless-stopped \
+            myapi:test
+
+      - name: Smoke test
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:8080/health >/dev/null; then
+              echo "OK"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Health check failed"
+          docker logs myapi-test || true
+          exit 1

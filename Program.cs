@@ -17,7 +17,8 @@ app.MapScalarApiReference(
     }
 );
 
-app.UseHttpsRedirection();
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
