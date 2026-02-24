@@ -40,3 +40,8 @@ jobs:
           echo "Health check failed"
           docker logs dotnet-test || true
           exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f dotnet-test || true
