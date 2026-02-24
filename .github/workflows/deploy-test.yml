@@ -23,14 +23,14 @@ jobs:
         run: |
           docker run -d \
             --name dotnet-test \
-            -p 5290:5290 \
+            -p 8080:8080 \
             --restart unless-stopped \
             dotnet:test
 
       - name: Smoke test
         run: |
           for i in {1..30}; do
-            if curl -fsS http://localhost:5290/health >/dev/null; then
+            if curl -fsS http://host.docker.internal:8080/health >/dev/null; then
               echo "OK"
               exit 0
             fi
