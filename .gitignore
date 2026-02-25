@@ -364,3 +364,16 @@ FodyWeavers.xsd
 
 # Rider
 .idea/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# .NET build artifacts
+bin/
+obj/
+.vs/
+*.user
