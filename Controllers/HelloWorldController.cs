@@ -10,7 +10,7 @@ public class HelloWorldController(ILogger<HelloWorldController> logger) : Contro
     public IActionResult GetHelloWorld() {
         logger.LogInformation("Hello World endpoint was hit.");
 
-        return Ok("Hello, Sean!");
+        return Ok("Hello, please check the README.md file for more information.");
     }
 
     [HttpGet("echo")]// Matches GET requests to /HelloWorld/echo

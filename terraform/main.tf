@@ -8,10 +8,7 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "CHANGE_ME-tf-state"
-    prefix = "terraform/state"
-  }
+  backend "gcs" {}
 }
 
 provider "google" {
@@ -46,7 +43,7 @@ resource "google_artifact_registry_repository" "my_api" {
   description   = "Docker repository for my-dotnet-api images"
   format        = "DOCKER"
 
-  depends_on = [for api in google_project_service.required_apis : api]
+  depends_on = [google_project_service.required_apis]
 }
 
 # Create the secret container (without versions) for DB connection strings.
@@ -58,7 +55,7 @@ resource "google_secret_manager_secret" "db_connection_string" {
     auto {}
   }
 
-  depends_on = [for api in google_project_service.required_apis : api]
+  depends_on = [google_project_service.required_apis]
 }
 
 # Deploy the Cloud Run service with autoscaling, resource limits, and secret-based env var.
