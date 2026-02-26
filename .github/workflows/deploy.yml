@@ -1,7 +1,11 @@
-# Required GitHub secrets:
+# Required GitHub secret:
 # - GCP_PROJECT_ID
-# - WIF_PROVIDER
-# - WIF_SERVICE_ACCOUNT
+# Authentication options (configure exactly one):
+# 1) Workload Identity Federation:
+#    - Prefer repository variables: WIF_PROVIDER, WIF_SERVICE_ACCOUNT
+#    - Or repository secrets: WIF_PROVIDER, WIF_SERVICE_ACCOUNT
+# 2) Service account key JSON:
+#    - Repository secret: GCP_CREDENTIALS_JSON
 name: Deploy to Cloud Run
 
 on:
@@ -20,16 +24,48 @@ jobs:
       REGION: europe-west1
       REPO: my-api
       SERVICE: my-dotnet-api
+      WIF_PROVIDER: ${{ vars.WIF_PROVIDER || secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ vars.WIF_SERVICE_ACCOUNT || secrets.WIF_SERVICE_ACCOUNT }}
+      GCP_CREDENTIALS_JSON: ${{ secrets.GCP_CREDENTIALS_JSON }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
+        if: ${{ env.WIF_PROVIDER != '' && env.WIF_SERVICE_ACCOUNT != '' && env.GCP_CREDENTIALS_JSON == '' }}
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Authenticate to Google Cloud (JSON key fallback)
+        if: ${{ env.GCP_CREDENTIALS_JSON != '' && env.WIF_PROVIDER == '' && env.WIF_SERVICE_ACCOUNT == '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ env.GCP_CREDENTIALS_JSON }}
+
+      - name: Validate auth configuration
+        if: ${{ always() }}
+        run: |
+          WIF_SET="false"
+          KEY_SET="false"
+          if [[ -n "${WIF_PROVIDER}" && -n "${WIF_SERVICE_ACCOUNT}" ]]; then
+            WIF_SET="true"
+          fi
+          if [[ -n "${GCP_CREDENTIALS_JSON}" ]]; then
+            KEY_SET="true"
+          fi
+
+          if [[ "${WIF_SET}" == "true" && "${KEY_SET}" == "true" ]]; then
+            echo "Both WIF and GCP_CREDENTIALS_JSON are configured. Configure exactly one."
+            exit 1
+          fi
+
+          if [[ "${WIF_SET}" != "true" && "${KEY_SET}" != "true" ]]; then
+            echo "No Google auth configured. Set WIF_PROVIDER + WIF_SERVICE_ACCOUNT (vars or secrets), or GCP_CREDENTIALS_JSON secret."
+            exit 1
+          fi
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
