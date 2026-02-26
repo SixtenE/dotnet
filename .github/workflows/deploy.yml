@@ -1,5 +1,6 @@
-# Required GitHub secret:
+# Required GitHub secrets:
 # - GCP_PROJECT_ID
+# - TF_STATE_BUCKET
 # Authentication options (configure exactly one):
 # 1) Workload Identity Federation:
 #    - Prefer repository variables: WIF_PROVIDER, WIF_SERVICE_ACCOUNT
@@ -24,6 +25,7 @@ jobs:
       REGION: europe-west1
       REPO: my-api
       SERVICE: my-dotnet-api
+      TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
       WIF_PROVIDER: ${{ vars.WIF_PROVIDER || secrets.WIF_PROVIDER }}
       WIF_SERVICE_ACCOUNT: ${{ vars.WIF_SERVICE_ACCOUNT || secrets.WIF_SERVICE_ACCOUNT }}
       GCP_CREDENTIALS_JSON: ${{ secrets.GCP_CREDENTIALS_JSON }}
@@ -86,9 +88,31 @@ jobs:
         with:
           terraform_version: 1.7.0
 
+      - name: Validate Terraform backend configuration
+        run: |
+          if [[ -z "${TF_STATE_BUCKET}" ]]; then
+            echo "Missing TF_STATE_BUCKET secret."
+            exit 1
+          fi
+
+      - name: Ensure Terraform state bucket exists
+        run: |
+          if gcloud storage buckets describe "gs://${TF_STATE_BUCKET}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
+            echo "Terraform state bucket exists: gs://${TF_STATE_BUCKET}"
+          else
+            echo "Creating Terraform state bucket: gs://${TF_STATE_BUCKET}"
+            gcloud storage buckets create "gs://${TF_STATE_BUCKET}" \
+              --project="${PROJECT_ID}" \
+              --location="${REGION}" \
+              --uniform-bucket-level-access
+          fi
+
       - name: Terraform init
         working-directory: terraform
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${TF_STATE_BUCKET}" \
+            -backend-config="prefix=terraform/state"
 
       - name: Terraform apply
         working-directory: terraform
