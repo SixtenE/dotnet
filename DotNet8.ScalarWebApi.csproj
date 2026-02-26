@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <Compile Remove="DotNet8.ScalarWebApi.Tests/**/*.cs" />
+        <Compile Remove="src/**/*.cs" />
     </ItemGroup>
 
     <ItemGroup>
