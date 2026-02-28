@@ -8,6 +8,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT_ID: ws-cicd
+      GCP_REGION: us-central1
+      CLOUD_RUN_SERVICE: myapi
 
     steps:
       - name: Checkout repository
@@ -21,5 +25,13 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v2"
 
-      - name: "Use gcloud CLI"
-        run: "gcloud info"
+      - name: Configure gcloud project
+        run: gcloud config set project "$GCP_PROJECT_ID"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$CLOUD_RUN_SERVICE" \
+            --source . \
+            --region "$GCP_REGION" \
+            --platform managed \
+            --allow-unauthenticated
