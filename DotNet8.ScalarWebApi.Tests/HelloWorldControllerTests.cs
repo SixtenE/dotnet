@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
@@ -37,6 +39,17 @@ public class HelloWorldControllerTests : IClassFixture<WebApplicationFactory<Pro
     public async Task GetEcho_WithoutMessage_ReturnsBadRequest()
     {
         var response = await _client.GetAsync("/HelloWorld/echo");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostGenerate_WithoutPrompt_ReturnsBadRequest()
+    {
+        StringContent content = new("""{"prompt":"","aiModel":"anthropic/claude-sonnet-4"}""", Encoding.UTF8);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        var response = await _client.PostAsync("/generate", content);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

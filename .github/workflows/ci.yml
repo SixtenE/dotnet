@@ -30,10 +30,13 @@ jobs:
         run: gcloud config set project "$GCP_PROJECT_ID"
 
       - name: Deploy to Cloud Run
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           gcloud run deploy "$CLOUD_RUN_SERVICE" \
             --source . \
             --region "$GCP_REGION" \
             --platform managed \
             --service-account "$CLOUD_RUN_RUNTIME_SA" \
+            --set-env-vars "OPENROUTER_API_KEY=$OPENROUTER_API_KEY" \
             --allow-unauthenticated
