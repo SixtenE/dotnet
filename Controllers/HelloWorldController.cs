@@ -35,6 +35,11 @@ public class HelloWorldController(ILogger<HelloWorldController> logger, IConfigu
         return Ok($"Echo: {message}");
     }
 
+    [HttpGet("/health")]
+    public IActionResult GetHealth() {
+        return Ok("Healthy");
+    }
+
     [HttpPost("/generate")] // Matches POST requests to /generate
     [Consumes("application/json")]
     public async Task<IActionResult> GenerateAsync([FromBody] GenerateRequest request) {
