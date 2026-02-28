@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GCP_PROJECT_ID: ws-cicd
-      GCP_REGION: us-central1
+      GCP_REGION: europe-north2
       CLOUD_RUN_SERVICE: myapi
 
     steps:
