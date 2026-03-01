@@ -2,8 +2,65 @@ using Microsoft.AspNetCore.Mvc;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
+using System.ClientModel.Primitives;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace DotNet8.WebApi.Controllers;
+
+public class GroqProviderHandler : DelegatingHandler
+{
+    public GroqProviderHandler() : base(new HttpClientHandler()) { }
+
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken ct)
+    {
+        if (request.Content is not null &&
+            request.Method == HttpMethod.Post)
+        {
+            var json = await request.Content.ReadAsStringAsync(ct);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            using var ms = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(ms))
+            {
+                writer.WriteStartObject();
+
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (prop.NameEquals("provider"))
+                    {
+                        continue;
+                    }
+
+                    prop.WriteTo(writer);
+                }
+
+                writer.WritePropertyName("provider");
+                writer.WriteStartObject();
+                writer.WritePropertyName("order");
+                writer.WriteStartArray();
+                writer.WriteStringValue("Groq");
+                writer.WriteEndArray();
+                writer.WriteBoolean("allow_fallbacks", false);
+                writer.WriteEndObject();
+
+                writer.WriteEndObject();
+            }
+
+            request.Content = new ByteArrayContent(ms.ToArray())
+            {
+                Headers =
+                {
+                    ContentType = new("application/json")
+                }
+            };
+        }
+
+        return await base.SendAsync(request, ct);
+    }
+}
 
 [ApiController]
 [Route("[controller]")]
@@ -59,6 +116,7 @@ public class HelloWorldController(ILogger<HelloWorldController> logger, IConfigu
         OpenAIClientOptions options = new() {
             Endpoint = new Uri("https://openrouter.ai/api/v1")
         };
+        options.Transport = new HttpClientPipelineTransport(new HttpClient(new GroqProviderHandler()));
 
         ApiKeyCredential credential = new(apiKey);
         ChatClient client = new(request.AiModel, credential, options);
