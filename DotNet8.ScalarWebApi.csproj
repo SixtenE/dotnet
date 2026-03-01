@@ -11,6 +11,12 @@
     <ItemGroup>
         <Compile Remove="DotNet8.ScalarWebApi.Tests/**/*.cs" />
         <Compile Remove="src/**/*.cs" />
+        <Content Remove="DotNet8.ScalarWebApi.Tests/**" />
+        <None Remove="DotNet8.ScalarWebApi.Tests/**" />
+        <EmbeddedResource Remove="DotNet8.ScalarWebApi.Tests/**" />
+        <Content Remove="src/**" />
+        <None Remove="src/**" />
+        <EmbeddedResource Remove="src/**" />
     </ItemGroup>
 
     <ItemGroup>
