@@ -94,7 +94,7 @@ public class HelloWorldController(ILogger<HelloWorldController> logger, IConfigu
 
     [HttpGet("/health")]
     public IActionResult GetHealth() {
-        return Ok("Healthy");
+        return Ok("Healthy Sean");
     }
 
     [HttpPost("/generate")] // Matches POST requests to /generate
